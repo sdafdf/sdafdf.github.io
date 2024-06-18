@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
+  
+  
+    
+    <entry>
+      <title>muduo网络库解析-第一章</title>
+      <link href="/2024/06/18/muduo%E7%BD%91%E7%BB%9C%E5%BA%93%E8%A7%A3%E6%9E%90-%E7%AC%AC%E4%B8%80%E7%AB%A0/"/>
+      <url>/2024/06/18/muduo%E7%BD%91%E7%BB%9C%E5%BA%93%E8%A7%A3%E6%9E%90-%E7%AC%AC%E4%B8%80%E7%AB%A0/</url>
+      
+        <content type="html"><![CDATA[<h1 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h1><ul><li>理解阻塞、非阻塞、同步、异步</li><li>理解Linux的物种I&#x2F;O模型</li><li>理解epoll的原理和优势</li><li>深刻理解Reactor模式</li></ul><h1 id="阻塞、非阻塞、同步、异步"><a href="#阻塞、非阻塞、同步、异步" class="headerlink" title="阻塞、非阻塞、同步、异步"></a>阻塞、非阻塞、同步、异步</h1><blockquote><p>典型的一次I&#x2F;O的两个阶段是什么？</p><p>数据准备和数据读写</p></blockquote><p><strong>数据准备：</strong>根据系统I&#x2F;O操作的就绪状态</p><ul><li>阻塞：指在调用某个函数或方法时，如果该函数或方法不能立即返回结果（如数据未就绪、需要等待外部事件等），则当前线程或进程会被挂起，无法执行其他任务，直到该函数或方法返回结果为止。</li><li>非阻塞：指在调用某个函数或方法时，即使该函数或方法不能立即返回结果，当前线程或进程也不会被挂起，而是可以继续执行其他任务。通常，非阻塞调用会返回一个状态值或错误码，调用者需要定时轮询或注册回调函数来检查操作状态或获取结果。</li></ul><blockquote><p>在处理 IO 的时候，阻塞和非阻塞都是同步 IO。只有使用了特殊的 API 才是异步 IO。</p></blockquote><img src="/2024/06/18/muduo%E7%BD%91%E7%BB%9C%E5%BA%93%E8%A7%A3%E6%9E%90-%E7%AC%AC%E4%B8%80%E7%AB%A0/1.png" class=""><blockquote><p>一个典型的网络IO接口调用，分为两个阶段，分别是“数据就绪”和“数据读写”，数据就绪阶 段分为阻塞和非阻塞，表现得结果就是，阻塞当前线程或是直接返回。 同步表示A向B请求调用一个网络IO接口时（或者调用某个业务逻辑API接口时），数据的读写都 是由请求方A自己来完成的（不管是阻塞还是非阻塞）；异步表示A向B请求调用一个网络IO接口 时（或者调用某个业务逻辑API接口时），向B传入请求的事件以及事件发生时通知的方式，A就 可以处理其它逻辑了，当B监听到事件处理完成后，会用事先约定好的通知方式，通知A处理结 果。</p></blockquote><h1 id="Linux上的五种I-O模型"><a href="#Linux上的五种I-O模型" class="headerlink" title="Linux上的五种I&#x2F;O模型"></a>Linux上的五种I&#x2F;O模型</h1><h2 id="阻塞blocking"><a href="#阻塞blocking" class="headerlink" title="阻塞blocking"></a>阻塞blocking</h2><img src="/2024/06/18/muduo%E7%BD%91%E7%BB%9C%E5%BA%93%E8%A7%A3%E6%9E%90-%E7%AC%AC%E4%B8%80%E7%AB%A0/blocking.png" class=""><h2 id="非阻塞non-blocking"><a href="#非阻塞non-blocking" class="headerlink" title="非阻塞non-blocking"></a>非阻塞non-blocking</h2><img src="/2024/06/18/muduo%E7%BD%91%E7%BB%9C%E5%BA%93%E8%A7%A3%E6%9E%90-%E7%AC%AC%E4%B8%80%E7%AB%A0/%E9%9D%9E%E9%98%BB%E5%A1%9E.png" class=""><h2 id="IO复用（IO-multiplexing）"><a href="#IO复用（IO-multiplexing）" class="headerlink" title="IO复用（IO multiplexing）"></a>IO复用（IO multiplexing）</h2><img src="/2024/06/18/muduo%E7%BD%91%E7%BB%9C%E5%BA%93%E8%A7%A3%E6%9E%90-%E7%AC%AC%E4%B8%80%E7%AB%A0/IO%E5%A4%8D%E7%94%A8.png" class=""><h2 id="信号驱动（siganl-driven）"><a href="#信号驱动（siganl-driven）" class="headerlink" title="信号驱动（siganl-driven）"></a>信号驱动（siganl-driven）</h2><img src="/2024/06/18/muduo%E7%BD%91%E7%BB%9C%E5%BA%93%E8%A7%A3%E6%9E%90-%E7%AC%AC%E4%B8%80%E7%AB%A0/%E4%BF%A1%E5%8F%B7%E9%A9%B1%E5%8A%A8.png" class=""><p>内核在第一个阶段是异步，在第二个阶段是同步；与非阻塞IO的区别在于它提供了消息通知机制，不需 要用户进程不断的轮询检查，减少了系统API的调用次数，提高了效率。</p><h2 id="异步"><a href="#异步" class="headerlink" title="异步"></a>异步</h2><img src="/2024/06/18/muduo%E7%BD%91%E7%BB%9C%E5%BA%93%E8%A7%A3%E6%9E%90-%E7%AC%AC%E4%B8%80%E7%AB%A0/%E5%BC%82%E6%AD%A5.png" class="">]]></content>
+      
+      
+      <categories>
+          
+          <category> muduo网络库剖析 </category>
+          
+      </categories>
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>C++基础第一篇</title>
+      <link href="/2024/06/15/CPP%E5%9F%BA%E7%A1%80%E7%AC%AC%E4%B8%80%E7%AF%87/"/>
+      <url>/2024/06/15/CPP%E5%9F%BA%E7%A1%80%E7%AC%AC%E4%B8%80%E7%AF%87/</url>
+      
+        <content type="html"><![CDATA[<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>本节介绍C++输入输出流和基本的变量</p><h2 id="iostream"><a href="#iostream" class="headerlink" title="iostream"></a>iostream</h2><p>C++提供了标准的输入和输出流功能,要包含iostream头文件，就可以使用cin和cout了 cin表示输入，cout表示输出，下面是使用案例</p><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">cin_func</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    string input;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;input your words &quot;</span> &lt;&lt; endl;</span><br><span class="line">    cin &gt;&gt; input;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;your input is &quot;</span> &lt;&lt; endl;</span><br><span class="line">    cout &lt;&lt; input &lt;&lt; endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>程序输出</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">input your words</span><br><span class="line">zack</span><br><span class="line">your input is</span><br><span class="line">zack</span><br></pre></td></tr></table></figure><p><code>&gt;&gt;</code> 会获取输入写入缓存,并返回cin对象，<code>&lt;&lt;</code>会从缓存中读取数据写入cout并返回cout,最后endl会将cout缓存中的数据输出到终端。</p><h2 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h2><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">var_func</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//整形，4字节</span></span><br><span class="line">    <span class="type">int</span> a = <span class="number">100</span>;</span><br><span class="line">    <span class="comment">//ll整形, 8字节</span></span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> lla = <span class="number">1000</span>;</span><br><span class="line">    <span class="comment">//长整型， 4 字节</span></span><br><span class="line">    <span class="type">long</span> la = <span class="number">1024</span>;</span><br><span class="line">    <span class="comment">//短整型,2 字节</span></span><br><span class="line">    <span class="type">short</span> sa = <span class="number">200</span>;</span><br><span class="line">    <span class="comment">//带符号字符型,</span></span><br><span class="line">    <span class="comment">//字符型使用时最好指示带符号还是不带符号</span></span><br><span class="line">    <span class="comment">//因为在不同的机器上不指明char符号可能会有问题</span></span><br><span class="line">    <span class="type">signed</span> <span class="type">char</span> sc = <span class="string">&#x27;a&#x27;</span>;</span><br><span class="line">    <span class="comment">//无符号字符型</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> uc = <span class="string">&#x27;m&#x27;</span>;</span><br><span class="line">    <span class="comment">//bool类型</span></span><br><span class="line">    <span class="type">bool</span> bt = <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h2 id="类型转换"><a href="#类型转换" class="headerlink" title="类型转换"></a>类型转换</h2><p>当我们把一个非布尔类型的算术值赋给布尔类型时，初始值为0则结果为false，否则结果为true。 当我们把一个布尔值赋给非布尔类型时，初始值为false则结果为0，初始值为true则结果为1。 当我们把一个浮点数赋给整数类型时，进行了近似处理。结果值将仅保留浮点数中小数点之前的部分。 当我们把一个整数值赋给浮点类型时，小数部分记为0。如果该整数所占的空间超过了浮点类型的容量，精度可能有损失。 当我们赋给无符号类型一个超出它表示范围的值时，结果是初始值对无符号类型表示数值总数取模后的余数。例如，8比特大小的unsigned char可以表示0至255区间内的值，如果我们赋了一个区间以外的值，则实际的结果是该值对256取模后所得的余数。因此，把-1赋给8比特大小的unsigned char所得的结果是255。 当我们赋给带符号类型一个超出它表示范围的值时，结果是未定义的（undefined）。此时，程序可能继续工作、可能崩溃，也可能生成垃圾数据。</p><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="type">bool</span> b = <span class="number">42</span>; <span class="comment">//b为true</span></span><br><span class="line"><span class="type">int</span> i = b; <span class="comment">//i 为1</span></span><br><span class="line">i = <span class="number">3.14</span>; <span class="comment">//i 为3</span></span><br><span class="line"><span class="type">double</span> pi = i; <span class="comment">//pi为3.0</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">char</span> c = <span class="number">-1</span>; <span class="comment">//</span></span><br></pre></td></tr></table></figure><h2 id="变量的声明和定义"><a href="#变量的声明和定义" class="headerlink" title="变量的声明和定义"></a>变量的声明和定义</h2><p>用extern在头文件声明，在cpp中定义，可以保证变量不会被重复包含</p><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">//只声明a</span></span><br><span class="line"><span class="keyword">extern</span> <span class="type">int</span> a;</span><br></pre></td></tr></table></figure><p>如果extern后边做了赋值操作，则不是声明而是定义</p><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="type">int</span> a= <span class="number">100</span>;</span><br></pre></td></tr></table></figure><p>不带extern 直接类型+ 变量名就是定义</p><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">//如下都是定义</span></span><br><span class="line"><span class="type">int</span> age = <span class="number">100</span>;</span><br><span class="line"><span class="type">int</span> num ;</span><br></pre></td></tr></table></figure><h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p>引用就是变量的别名，通过修改引用达到修改变量的值的目的</p><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> j = <span class="number">20</span>;</span><br><span class="line"><span class="comment">// i 是j的引用</span></span><br><span class="line"><span class="type">int</span> &amp;i = j;</span><br><span class="line">j = <span class="number">200</span>;</span><br><span class="line">cout &lt;&lt; i &lt;&lt; <span class="string">&quot; &quot;</span> &lt;&lt; j &lt;&lt; endl;</span><br></pre></td></tr></table></figure>]]></content>
+      
+      
+      <categories>
+          
+          <category> C++基础 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> C++基础 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+  
+  
+</search>
