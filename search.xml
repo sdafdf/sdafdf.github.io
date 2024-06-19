@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>muduo网络库解析-第二章</title>
+      <link href="/2024/06/19/muduo%E7%BD%91%E7%BB%9C%E5%BA%93%E8%A7%A3%E6%9E%90-%E7%AC%AC%E4%BA%8C%E7%AB%A0/"/>
+      <url>/2024/06/19/muduo%E7%BD%91%E7%BB%9C%E5%BA%93%E8%A7%A3%E6%9E%90-%E7%AC%AC%E4%BA%8C%E7%AB%A0/</url>
+      
+        <content type="html"><![CDATA[<h1 id="好的网络服务器如何设计？"><a href="#好的网络服务器如何设计？" class="headerlink" title="好的网络服务器如何设计？"></a>好的网络服务器如何设计？</h1><blockquote><p>libev作者认为：one loop per thread is usually a good model</p></blockquote><p>这样多线程服务端编程的问题就转换为了如何设计一个高效且易于使用的event loop，然后每个线程运行一个event loop即可。</p><p>event loop是非阻塞网络编程的核心，在实际应用中，非阻塞几乎总是和IO复用配合使用的，主要原因有两点：</p><ul><li>使用轮询的方式检查某个IO操作是否完成，这样太消耗CPU资源</li><li>IO复用一般不能和阻塞IO用在一起，因为阻塞式IO中read()、write()、accept()、connect()都有可能阻塞当前线程，这样线程就没办法处理其他的socket上的IO事件。</li></ul><p>所以，平常提到的非阻塞IO一般都指的是非阻塞IO+IO复用，单独的使用其中任何一个都没有办法很好的实现功能。</p><blockquote><p>epoll+fork不如epoll+pthread？</p></blockquote><p>强大的nginx服务器采用了epoll+fork模型作为网络模块的架构设计，实现了简单好用的负载算法，使 各个fork网络进程不会忙的越忙、闲的越闲，并且通过引入一把乐观锁解决了该模型导致的服务器惊群 现象，功能十分强大。</p><h1 id="Reactor模型"><a href="#Reactor模型" class="headerlink" title="Reactor模型"></a>Reactor模型</h1><p><strong>重要组件：</strong>Event事件、Reactor反应堆、Demultiplex事件分发器、Evanthandler事件处理器</p><img src="/2024/06/19/muduo%E7%BD%91%E7%BB%9C%E5%BA%93%E8%A7%A3%E6%9E%90-%E7%AC%AC%E4%BA%8C%E7%AB%A0/image-20240619223106590.png" class="" title="image-20240619223106590">]]></content>
+      
+      
+      <categories>
+          
+          <category> muduo网络库剖析 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> muduo,C++,网络编程 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>hexo博客图片显示问题</title>
       <link href="/2024/06/18/hexo%E5%8D%9A%E5%AE%A2%E5%9B%BE%E7%89%87%E6%98%BE%E7%A4%BA%E9%97%AE%E9%A2%98/"/>
       <url>/2024/06/18/hexo%E5%8D%9A%E5%AE%A2%E5%9B%BE%E7%89%87%E6%98%BE%E7%A4%BA%E9%97%AE%E9%A2%98/</url>
