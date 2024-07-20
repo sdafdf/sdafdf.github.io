@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>docker中使用gpu</title>
+      <link href="/2024/07/20/docker%E4%B8%AD%E4%BD%BF%E7%94%A8gpu/"/>
+      <url>/2024/07/20/docker%E4%B8%AD%E4%BD%BF%E7%94%A8gpu/</url>
+      
+        <content type="html"><![CDATA[<h1 id="docker中使用gpu"><a href="#docker中使用gpu" class="headerlink" title="docker中使用gpu"></a>docker中使用gpu</h1><p>想要在docker中使用gpu，通常可以通过直接挂载gpu、使用nvidia-docker2和nvidia-container-runtime。其中nvidia-docker2官方已经不再维护；下面主要介绍直接挂载设备和nvidia-container-runtime的方式。</p><h2 id="1、直接挂载"><a href="#1、直接挂载" class="headerlink" title="1、直接挂载"></a>1、直接挂载</h2><p>在Docker守护进程启动时，可以通过<code>--device</code>参数直接指定GPU设备。这种方式比较直接，但不如NVIDIA Container runtime灵活和方便管理。示例命令如下：</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker run -it --device=/dev/nvidia0:/dev/nvidia0 --device=/dev/nvidiactl:/dev/nvidiactl --device=/dev/nvidia-uvm:/dev/nvidia-uvm --device=/dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools nvidia/cuda nvidia-smi</span><br></pre></td></tr></table></figure><h2 id="2、通过nvidia-container-runtime"><a href="#2、通过nvidia-container-runtime" class="headerlink" title="2、通过nvidia-container-runtime"></a>2、通过nvidia-container-runtime</h2><p>新建shell脚本，内容如下：</p><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey | \</span><br><span class="line">  sudo apt-key add -</span><br><span class="line">distribution=$(. /etc/os-release;echo $ID$VERSION_ID)</span><br><span class="line">curl -s -L https://nvidia.github.io/nvidia-container-runtime/$distribution/nvidia-container-runtime.list | \</span><br><span class="line">  sudo tee /etc/apt/sources.list.d/nvidia-container-runtime.list</span><br><span class="line">sudo apt-get update</span><br></pre></td></tr></table></figure><p>执行脚本成功后，再执行以下命令开始安装nvidia-container-runtime</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install nvidia-container-runtime</span><br><span class="line">systemctl restart docker #重启docker</span><br></pre></td></tr></table></figure><p>测试验证：</p><p>先拉取一下nvidia&#x2F;cuda这个镜像，这是官方提供的一个镜像，里面包含了cuda工具包</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo docker pull nvidia/cuda:11.0-base</span><br></pre></td></tr></table></figure><p>然后在启动镜像，添加 –gpus all或者 –gpus ”device&#x3D;1“指定gpu</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker run --gpus all --rm nvidia/cuda:11.0-base nvidia-smi</span><br></pre></td></tr></table></figure><p>如果成功打印出nvidia-smi的信息，则表示安装成功，现在可以愉快的在docker中使用gpu了。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> docker </category>
+          
+      </categories>
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>T4 算力卡安装驱动</title>
       <link href="/2024/07/20/T4-%E7%AE%97%E5%8A%9B%E5%8D%A1%E5%AE%89%E8%A3%85%E9%A9%B1%E5%8A%A8/"/>
       <url>/2024/07/20/T4-%E7%AE%97%E5%8A%9B%E5%8D%A1%E5%AE%89%E8%A3%85%E9%A9%B1%E5%8A%A8/</url>
@@ -48,19 +67,6 @@
           <category> docker </category>
           
       </categories>
-      
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title></title>
-      <link href="/2024/07/20/GPU%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%A9%B1%E5%8A%A8%E5%AE%89%E8%A3%85%E5%92%8C%E9%85%8D%E7%BD%AE/"/>
-      <url>/2024/07/20/GPU%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%A9%B1%E5%8A%A8%E5%AE%89%E8%A3%85%E5%92%8C%E9%85%8D%E7%BD%AE/</url>
-      
-        <content type="html"><![CDATA[<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">title: 服务器安装gpu驱动、cuda以及docker，并在docker中使用gpu</span><br><span class="line">date: 2024-07-20 21:50:17</span><br><span class="line">tags:</span><br><span class="line">categories: </span><br></pre></td></tr></table></figure><h1 id="安装NVIDIA-T4驱动"><a href="#安装NVIDIA-T4驱动" class="headerlink" title="安装NVIDIA T4驱动"></a>安装NVIDIA T4驱动</h1><p>安装驱动之前先安装依赖：</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install epel-release</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install pkgconfig libglvnd-devel</span><br></pre></td></tr></table></figure><p>在官网下载驱动，然后给驱动赋予权限后执行</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x NVIDIA-Linux-x86_64-535.161.08.run</span><br><span class="line">sh ./NVIDIA-Linux-x86_64-535.161.08.run -s  --no-x-check</span><br><span class="line">nvidia-smi</span><br></pre></td></tr></table></figure><p>只要执行nvidia-smi后出现下图，表示驱动安装完成。</p><p><img src="https://img-blog.csdnimg.cn/direct/1b7ff550af5044f9b51525881beca7f5.png" alt="img"></p><h1 id="Ubuntu22-04安装docker"><a href="#Ubuntu22-04安装docker" class="headerlink" title="Ubuntu22.04安装docker"></a>Ubuntu22.04安装docker</h1><p>1、首先，更新软件包索引，并且安装必要的依赖</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common</span><br></pre></td></tr></table></figure><p>2、导入GPG key：</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -</span><br><span class="line"></span><br><span class="line"># 目前docker在国内处于被封禁状态，docker官方访问不稳定，可以使用阿里源来代替</span><br><span class="line">curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -</span><br></pre></td></tr></table></figure><p>3、将docker APT软件源添加到系统</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo add-apt-repository &quot;deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable&quot;</span><br><span class="line"></span><br><span class="line">#阿里源</span><br><span class="line">sudo add-apt-repository &quot;deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable&quot;</span><br></pre></td></tr></table></figure><p>4、开始安装docker</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install docker-ce docker-ce-cli containerd.io</span><br></pre></td></tr></table></figure><p>6、启动docker</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl start docker</span><br><span class="line"></span><br><span class="line"># 如果是wsl，则无法通过systemctl启动，wsl启动方式如下</span><br><span class="line">sudo service docker start</span><br></pre></td></tr></table></figure><p>7、查看docker状态</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl status docker</span><br></pre></td></tr></table></figure><p>8、将当前用户添加到docker组，可以避免每次使用docker时都需要sudo权限</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo usermod -aG docker &amp;USER</span><br></pre></td></tr></table></figure><p>9、重启docker</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">service docker restart</span><br></pre></td></tr></table></figure><h1 id="sudo-service-docker-start显示-OK-但是-Docker-is-not-running问题"><a href="#sudo-service-docker-start显示-OK-但是-Docker-is-not-running问题" class="headerlink" title="sudo service docker start显示[OK]但是* Docker is not running问题"></a><font color=Red>sudo service docker start显示[OK]但是* Docker is not running问题</font></h1><p><font color=Red>首先，需要添加fstab文件，因为由于某种原因不存在或者无法读取</font></p><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">touch /etc/fstab</span><br></pre></td></tr></table></figure><p><font color=Red>由于网络控制器错误，所以需要从nftables切换到iptables</font></p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">update-alternatives --set iptables /usr/sbin/iptables-legacy</span><br><span class="line">update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy</span><br></pre></td></tr></table></figure><p><font color=Red>完成后重新启动docker即可</font></p>]]></content>
-      
       
       
     </entry>
