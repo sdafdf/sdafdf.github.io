@@ -4,6 +4,19 @@
   
     
     <entry>
+      <title>测试</title>
+      <link href="/2024/12/08/%E6%B5%8B%E8%AF%95/"/>
+      <url>/2024/12/08/%E6%B5%8B%E8%AF%95/</url>
+      
+        <content type="html"><![CDATA[<h1 id="这是一个测试"><a href="#这是一个测试" class="headerlink" title="这是一个测试"></a>这是一个测试</h1>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>docker中使用gpu</title>
       <link href="/2024/07/20/docker%E4%B8%AD%E4%BD%BF%E7%94%A8gpu/"/>
       <url>/2024/07/20/docker%E4%B8%AD%E4%BD%BF%E7%94%A8gpu/</url>
